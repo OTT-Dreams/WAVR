@@ -1019,16 +1019,38 @@ function renderList() {
 }
 
 // ── Playback ──
-function play(i) {
+async function play(i) {
   if (i < 0 || i >= tracks.length) return;
   cur = i;
   const t = tracks[i];
-  // Use Drive API alt=media for direct streaming (avoids CORS redirect issues)
-  audio.src = `https://www.googleapis.com/drive/v3/files/${t.fileId}?alt=media&key=${API_KEY}`;
-  audio.volume = document.getElementById('vol').value / 100;
-  audio.play()
-    .then(()=>{ playing=true; updateUI(); cancelAnimationFrame(raf); animViz(); })
-    .catch(()=> toast('❌ Cannot load. Check Drive permissions.'));
+
+  // Update UI immediately
+  updateUI();
+  toast('⏳ Loading...');
+
+  // Revoke previous blob URL
+  if (audio._blobUrl) { URL.revokeObjectURL(audio._blobUrl); audio._blobUrl = null; }
+
+  // Fetch as blob — googleapis alt=media works for publicly shared files with API key
+  const apiUrl = `https://www.googleapis.com/drive/v3/files/${t.fileId}?alt=media&key=${API_KEY}`;
+
+  try {
+    const resp = await fetch(apiUrl);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const blob = await resp.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    audio._blobUrl = blobUrl;
+    audio.src = blobUrl;
+    audio.volume = document.getElementById('vol').value / 100;
+    await audio.play();
+    playing = true;
+    updateUI();
+    cancelAnimationFrame(raf);
+    animViz();
+  } catch(err) {
+    console.error('Play error:', err);
+    toast('❌ Load failed: ' + err.message);
+  }
 }
 
 function updateUI() {
@@ -1080,7 +1102,7 @@ function updateUI() {
 
 function togglePlay() {
   if (cur===-1 && tracks.length) { play(0); return; }
-  if (!tracks.length) return;
+  if (!tracks.length) { toast('⚠️ No tracks loaded'); return; }
   if (audio.paused) {
     audio.play(); playing=true;
     document.getElementById('art-box').classList.remove('halted');
