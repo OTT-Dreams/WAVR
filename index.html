@@ -963,46 +963,77 @@ async function loadFromDrive() {
   setStatus('loading', 'Loading library...');
   document.getElementById('track-count').textContent = '…';
 
-  const MIME = ['audio/mpeg','audio/mp3','audio/wav','audio/ogg','audio/flac','audio/aac','audio/x-m4a','audio/mp4'];
-  const mq   = MIME.map(m => `mimeType='${m}'`).join(' or ');
-  const q    = encodeURIComponent(`'${FOLDER_ID}' in parents and (${mq}) and trashed=false`);
-  const fl   = encodeURIComponent('files(id,name,mimeType)');
-  const url  = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fl}&orderBy=name&pageSize=1000&key=${API_KEY}`;
+  // Strategy: fetch ALL files in folder (no MIME filter),
+  // then filter client-side by extension — much more reliable
+  const q  = encodeURIComponent(`'${FOLDER_ID}' in parents and trashed=false`);
+  const fl = encodeURIComponent('files(id,name,mimeType)');
+
+  const AUDIO_EXT = /\.(mp3|wav|ogg|flac|aac|m4a|opus|wma|mp4|webm|aiff|alac)$/i;
+  const AUDIO_MIME = ['audio/','video/mp4','video/webm']; // mp4/webm can contain audio
+
+  let allFiles = [];
+  let pageToken = '';
 
   try {
-    const res  = await fetch(url);
-    const data = await res.json();
-    if (data.error) {
-      setStatus('err', data.error.message || 'API Error');
-      toast('❌ ' + (data.error.message || 'API Error'));
-      renderEmpty('API Error', data.error.message);
-      return;
-    }
-    const files = data.files || [];
-    if (!files.length) {
+    // Paginate through ALL results (Drive returns max 1000 per page)
+    do {
+      const pageParam = pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '';
+      const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fl},nextPageToken&orderBy=name&pageSize=1000&key=${API_KEY}${pageParam}`;
+      const res  = await fetch(url);
+      const data = await res.json();
+
+      if (data.error) {
+        setStatus('err', data.error.message || 'API Error');
+        toast('❌ ' + (data.error.message || 'API Error'));
+        renderEmpty('API Error', data.error.message);
+        return;
+      }
+
+      const batch = data.files || [];
+      allFiles = allFiles.concat(batch);
+      pageToken = data.nextPageToken || '';
+
+    } while (pageToken);
+
+    // Filter: keep files that match audio extension OR audio MIME type
+    const audioFiles = allFiles.filter(f =>
+      AUDIO_EXT.test(f.name) ||
+      AUDIO_MIME.some(m => (f.mimeType || '').startsWith(m))
+    );
+
+    console.log(`Drive: ${allFiles.length} total files, ${audioFiles.length} audio files`);
+    console.log('All files:', allFiles.map(f => f.name + ' | ' + f.mimeType));
+
+    if (!audioFiles.length) {
       setStatus('err', 'No audio found');
-      toast('⚠️ Folder-এ audio নেই');
-      renderEmpty('Empty Folder', 'No audio files in your Drive folder');
+      toast('⚠️ Folder-এ audio নেই (total: ' + allFiles.length + ' files)');
+      renderEmpty(
+        'No Audio Files',
+        `Folder has ${allFiles.length} file(s) but none are audio.<br>Check file extensions.`
+      );
       return;
     }
-    const driveTracks = files.map(f => ({
+
+    const driveTracks = audioFiles.map(f => ({
       fileId: f.id,
       title:  cleanName(f.name),
       artist: guessArtist(f.name),
       emoji:  mimeEmoji(f.mimeType),
     }));
+
     const manual = JSON.parse(localStorage.getItem('wavr_manual') || '[]');
     tracks = [...driveTracks, ...manual];
 
     setStatus('ok', `${tracks.length} songs loaded`);
     document.getElementById('track-count').textContent = tracks.length;
     renderList();
-    toast(`✅ ${files.length} songs loaded!`);
+    toast(`✅ ${audioFiles.length} songs loaded!`);
     if (cur === -1) play(0);
 
   } catch(e) {
+    console.error('loadFromDrive error:', e);
     setStatus('err', 'Network error');
-    toast('❌ Network error');
+    toast('❌ Network error: ' + e.message);
     renderEmpty('Network Error', 'Check API Key and folder sharing');
   }
 }
