@@ -593,39 +593,45 @@ input[type=range].vol-range:hover::-webkit-slider-thumb { background:var(--accen
     grid-template-rows: 1fr auto;
   }
 
-  .sidebar { display: none; }
+  /* On mobile: SHOW sidebar as main content, HIDE now-playing main */
+  .sidebar {
+    display: flex;
+    grid-row: 1/2;
+    grid-column: 1;
+    border-right: none;
+    background: var(--bg);
+  }
 
-  .main-content { grid-row: 1/2; }
+  .main-content { display: none; }
 
-  /* Mobile player bar becomes a proper bottom sheet */
+  /* Mobile player bar */
   .player-bar {
     grid-column: 1/-1;
     grid-row: 2/3;
     grid-template-columns: 1fr;
-    padding: 12px 16px 20px;
-    gap: 10px;
-    background: var(--bg3);
-    border-radius: 0;
+    padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
+    gap: 8px;
     height: auto;
   }
 
-  /* On mobile: hide left track info & right volume, show inline */
+  /* Hide desktop-only sections in player bar */
   .pb-track { display: none; }
   .pb-right  { display: none; }
-  .pb-center { width: 100%; gap: 10px; }
-
-  /* Mobile: full-width progress */
+  .pb-center { width: 100%; gap: 8px; }
   .pb-progress-row { max-width: 100%; }
 
-  /* Mobile: show mini now-playing bar above controls */
+  /* Mobile now-playing strip — shown inside player bar */
   .mobile-now-playing {
     display: flex;
     align-items: center;
     gap: 12px;
     width: 100%;
+    padding: 2px 0 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
   }
   .mobile-thumb {
-    width: 44px; height: 44px;
+    width: 42px; height: 42px;
     border-radius: 6px;
     background: var(--bg4);
     flex-shrink: 0;
@@ -635,32 +641,30 @@ input[type=range].vol-range:hover::-webkit-slider-thumb { background:var(--accen
   }
   .mobile-info { flex:1; min-width:0; }
   .mobile-title {
-    font-size:14px; font-weight:700;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    font-size: 14px; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .mobile-artist { font-size:12px; color:var(--text-2); margin-top:1px; }
+  .mobile-artist { font-size: 12px; color: var(--text-2); margin-top: 1px; }
 
-  /* Mobile controls bigger */
-  .pb-ctrl-row { gap: 12px; }
-  .ctrl-icon { width: 40px; height: 40px; }
-  .pb-play { width: 46px; height: 46px; }
+  /* Bigger controls on mobile */
+  .pb-ctrl-row { gap: 10px; }
+  .ctrl-icon { width: 38px; height: 38px; }
+  .pb-play { width: 44px; height: 44px; }
 
-  /* Mobile bottom safe area */
-  .player-bar { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+  /* Mobile sidebar adjustments */
+  .sidebar-inner { padding: 0 6px; }
+  .logo-wrap { padding: 14px 12px 10px; }
+  .playlist-scroll { flex: 1; }
+  .track-row { padding: 8px 10px; }
+  .tr-thumb { width: 42px; height: 42px; font-size: 18px; }
+  .tr-title { font-size: 14px; }
+  .tr-artist { font-size: 12px; }
 
-  .now-playing-zone { padding: 12px 24px; }
-  .art-box { width: 180px; height: 180px; }
-  .nw-title { font-size: 20px; }
-  .viz-wrap { height: 32px; }
-
-  .toast { bottom: 200px; }
+  .toast { bottom: 220px; }
 }
 
 /* Mobile now-playing — hidden on desktop */
 .mobile-now-playing { display: none; }
-@media (max-width: 768px) {
-  .mobile-now-playing { display: flex; }
-}
 
 /* ═══════════════════════════════════════════
    GRAIN OVERLAY
@@ -1019,7 +1023,8 @@ function play(i) {
   if (i < 0 || i >= tracks.length) return;
   cur = i;
   const t = tracks[i];
-  audio.src = `https://drive.google.com/uc?export=download&id=${t.fileId}`;
+  // Use Drive API alt=media for direct streaming (avoids CORS redirect issues)
+  audio.src = `https://www.googleapis.com/drive/v3/files/${t.fileId}?alt=media&key=${API_KEY}`;
   audio.volume = document.getElementById('vol').value / 100;
   audio.play()
     .then(()=>{ playing=true; updateUI(); cancelAnimationFrame(raf); animViz(); })
