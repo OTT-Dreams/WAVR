@@ -737,6 +737,161 @@ body::after {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+
+/* ═══════════════════════════════════════════
+   SETUP SCREEN
+═══════════════════════════════════════════ */
+.setup-screen {
+  position: fixed;
+  inset: 0;
+  background: #0a0a0a;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  transition: opacity 0.4s, transform 0.4s;
+}
+.setup-screen.hide {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.97);
+}
+.setup-card {
+  width: 100%;
+  max-width: 440px;
+  background: #111;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 36px 32px 32px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.8);
+}
+.setup-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.setup-logo-icon {
+  width: 38px; height: 38px;
+  background: #1db954;
+  border-radius: 10px;
+  display: flex; align-items:center; justify-content:center;
+}
+.setup-logo-text {
+  font-family: var(--font);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+.setup-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 6px;
+}
+.setup-subtitle {
+  font-size: 13px;
+  color: #6a6a6a;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+.setup-field { margin-bottom: 16px; }
+.setup-field label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #6a6a6a;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.setup-field input {
+  width: 100%;
+  background: #1a1a1a;
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #fff;
+  font-family: var(--font);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.setup-field input:focus {
+  border-color: #1db954;
+  box-shadow: 0 0 0 3px rgba(29,185,84,0.12);
+}
+.setup-field input::placeholder { color: #3a3a3a; }
+.setup-field .setup-hint {
+  font-size: 11px;
+  color: #4a4a4a;
+  margin-top: 5px;
+  line-height: 1.55;
+}
+.setup-field .setup-hint code {
+  color: #1db954;
+  background: rgba(29,185,84,0.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+.setup-submit {
+  width: 100%;
+  margin-top: 24px;
+  background: #1db954;
+  color: #000;
+  border: none;
+  border-radius: 50px;
+  padding: 14px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: background 0.15s, transform 0.1s;
+}
+.setup-submit:hover { background: #1ed760; }
+.setup-submit:active { transform: scale(0.97); }
+.setup-error {
+  font-size: 12px;
+  color: #e74c3c;
+  margin-top: 10px;
+  text-align: center;
+  min-height: 18px;
+  transition: opacity 0.2s;
+}
+.setup-reset-wrap {
+  text-align: center;
+  margin-top: 16px;
+}
+.setup-reset-link {
+  font-size: 11px;
+  color: #3a3a3a;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.15s;
+}
+.setup-reset-link:hover { color: #6a6a6a; }
+
+/* Reset button in topbar */
+.reset-config-btn {
+  width: 32px; height: 32px;
+  background: var(--bg3);
+  border-radius: 50%;
+  display: flex; align-items:center; justify-content:center;
+  color: var(--text-3);
+  transition: all 0.15s;
+  cursor: pointer;
+  title: 'Change API Config';
+}
+.reset-config-btn:hover { background: var(--hover); color: #e74c3c; }
+
+@media (max-width: 480px) {
+  .setup-card { padding: 28px 20px 24px; border-radius: 16px; }
+  .setup-title { font-size: 18px; }
+}
 </style>
 </head>
 <body>
@@ -784,6 +939,9 @@ body::after {
       <span class="main-topbar-title">Now Playing</span>
       <button class="refresh-btn" onclick="loadFromDrive()" title="Refresh library">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      </button>
+      <button class="reset-config-btn" onclick="resetConfig()" title="Change API / Folder">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       </button>
     </div>
 
@@ -914,8 +1072,8 @@ body::after {
 // ══════════════════════════════════════════
 //  🔑 CONFIG
 // ══════════════════════════════════════════
-const API_KEY   = "AIzaSyANUWyOMBR4R041EWv2FsMrt8xfVvIEMnA";
-const FOLDER_ID = "1jGcpCRrHgOv2jwu97uY-ZF39bq19hkAk";
+let API_KEY   = localStorage.getItem('wavr_api_key')   || '';
+let FOLDER_ID = localStorage.getItem('wavr_folder_id') || '';
 // ══════════════════════════════════════════
 
 // State
@@ -1361,7 +1519,143 @@ document.addEventListener('keydown',e=>{
 });
 
 // ── Init ──
-loadFromDrive();
+if (!API_KEY || !FOLDER_ID) { showSetup(); } else { loadFromDrive(); }
+
+  // ── Setup Screen ──
+  function showSetup() {
+    const ss = document.getElementById('setup-screen');
+    ss.classList.remove('hide');
+    setTimeout(() => {
+      const inp = document.getElementById('s-apikey');
+      if (inp) inp.focus();
+    }, 200);
+  }
+
+  function hideSetup() {
+    const ss = document.getElementById('setup-screen');
+    ss.classList.add('hide');
+    // Remove from DOM after animation
+    setTimeout(() => { ss.style.display = 'none'; }, 420);
+  }
+
+  function submitSetup() {
+    const key    = document.getElementById('s-apikey').value.trim();
+    const folder = document.getElementById('s-folderid').value.trim();
+    const errEl  = document.getElementById('s-error');
+
+    if (!key) { errEl.textContent = '⚠️ API Key দাও'; return; }
+    if (!folder) { errEl.textContent = '⚠️ Folder ID দাও'; return; }
+
+    // Basic validation
+    if (!key.startsWith('AIza')) {
+      errEl.textContent = '⚠️ Invalid API Key format (should start with AIza...)';
+      return;
+    }
+
+    // Extract folder ID if full URL pasted
+    let fid = folder;
+    const fm = folder.match(/folders\/([a-zA-Z0-9_-]{15,})/);
+    if (fm) fid = fm[1];
+
+    if (fid.length < 15) {
+      errEl.textContent = '⚠️ Invalid Folder ID';
+      return;
+    }
+
+    errEl.textContent = '';
+
+    // Save to localStorage
+    localStorage.setItem('wavr_api_key',   key);
+    localStorage.setItem('wavr_folder_id', fid);
+    API_KEY   = key;
+    FOLDER_ID = fid;
+
+    // Animate out and load
+    hideSetup();
+    setTimeout(() => loadFromDrive(), 450);
+  }
+
+  function resetConfig() {
+    if (!confirm('API Key আর Folder ID মুছে ফেলবো?')) return;
+    localStorage.removeItem('wavr_api_key');
+    localStorage.removeItem('wavr_folder_id');
+    API_KEY = ''; FOLDER_ID = '';
+    // Reset fields
+    const ka = document.getElementById('s-apikey');
+    const kf = document.getElementById('s-folderid');
+    if (ka) ka.value = '';
+    if (kf) kf.value = '';
+    document.getElementById('s-error').textContent = '';
+    // Show setup again
+    const ss = document.getElementById('setup-screen');
+    ss.style.display = 'flex';
+    requestAnimationFrame(() => ss.classList.remove('hide'));
+    setTimeout(() => { if (ka) ka.focus(); }, 200);
+  }
+
+  function showHowTo() {
+    alert(
+      'API Key পাওয়ার উপায়:\n\n' +
+      '1. console.cloud.google.com এ যাও\n' +
+      '2. New Project বানাও\n' +
+      '3. APIs & Services → Enable APIs → "Google Drive API" enable করো\n' +
+      '4. APIs & Services → Credentials → Create Credentials → API Key\n' +
+      '5. API Key copy করো\n\n' +
+      'Folder ID পাওয়ার উপায়:\n\n' +
+      '1. Google Drive-এ music folder খোলো\n' +
+      '2. URL থেকে /folders/ এর পরের অংশটা copy করো\n' +
+      '3. Folder → Share → Anyone with the link → Viewer করো'
+    );
+  }
+
+  // Enter key support on setup inputs
+  document.addEventListener('DOMContentLoaded', () => {
+    ['s-apikey','s-folderid'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('keydown', e => {
+        if (e.key === 'Enter') submitSetup();
+      });
+    });
+  });
+
 </script>
+
+<!-- ══════════ SETUP SCREEN ══════════ -->
+<div class="setup-screen" id="setup-screen">
+  <div class="setup-card">
+    <div class="setup-logo">
+      <div class="setup-logo-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#000"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      </div>
+      <span class="setup-logo-text">WAVR</span>
+    </div>
+
+    <div class="setup-title">Connect your Drive</div>
+    <div class="setup-subtitle">Enter your Google Drive API Key and Music Folder ID to get started. This is stored only on your device — never shared.</div>
+
+    <div class="setup-field">
+      <label>Google Drive API Key</label>
+      <input type="password" id="s-apikey" placeholder="AIzaSy..." autocomplete="off" autocorrect="off" spellcheck="false">
+      <p class="setup-hint">From <code>console.cloud.google.com</code> → Credentials → API Key</p>
+    </div>
+
+    <div class="setup-field">
+      <label>Music Folder ID</label>
+      <input type="text" id="s-folderid" placeholder="1BxiMVs0XRA5nFMd..." autocomplete="off" autocorrect="off" spellcheck="false">
+      <p class="setup-hint">From Drive folder URL: <code>drive.google.com/drive/folders/<strong>THIS_PART</strong></code></p>
+    </div>
+
+    <div class="setup-error" id="s-error"></div>
+
+    <button class="setup-submit" onclick="submitSetup()">
+      Connect &amp; Open Player
+    </button>
+
+    <div class="setup-reset-wrap">
+      <span class="setup-reset-link" onclick="showHowTo()">How to get API Key &amp; Folder ID?</span>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
