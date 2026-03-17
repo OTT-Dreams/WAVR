@@ -1786,6 +1786,7 @@ if (!API_KEY || !FOLDER_ID) { showSetup(); } else { loadFromDrive(); }
 
   // Enter key support on setup inputs
   document.addEventListener('DOMContentLoaded', () => {
+     if (!API_KEY || !FOLDER_ID) { showSetup(); } else { loadFromDrive(); }
     ['s-apikey','s-folderid'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('keydown', e => {
