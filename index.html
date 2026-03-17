@@ -353,9 +353,26 @@ input  { font-family:var(--font); }
   width:38px; height:38px; background:var(--text);
   border-radius:50%; display:flex; align-items:center; justify-content:center;
   color:#000; transition:transform .1s, background .2s; flex-shrink:0;
+  position:relative; overflow:hidden;
 }
 .pb-play:hover { transform:scale(1.06); background:#e0e0e0; }
 .pb-play:active { transform:scale(.94); }
+
+/* Spinner ring that shows while loading */
+.pb-play.loading {
+  background: var(--bg4);
+  pointer-events: none;
+}
+.pb-play.loading::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(255,255,255,0.15);
+  border-top-color: var(--accent);
+  animation: spin-btn 0.7s linear infinite;
+}
+@keyframes spin-btn { to { transform: rotate(360deg); } }
 
 .pb-progress-row {
   display:flex; align-items:center; gap:8px;
@@ -517,8 +534,10 @@ body::after {
 .setup-screen {
   position:fixed; inset:0; background:#0a0a0a; z-index:9000;
   display:none; align-items:center; justify-content:center;
-  padding:24px; transition:opacity .4s, transform .4s;
+  padding:24px;
+  opacity:1; transition:opacity .4s, transform .4s;
 }
+.setup-screen.visible { display:flex; }
 .setup-screen.hide { opacity:0; pointer-events:none; transform:scale(.97); }
 .setup-card {
   width:100%; max-width:440px; background:#111;
@@ -691,11 +710,6 @@ body::after {
 
         <button class="pb-play" id="pb-play" onclick="togglePlay()">
           <svg id="play-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          <svg id="loading-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:none">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
-              <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/>
-            </path>
-          </svg>
         </button>
 
         <button class="ctrl-icon" onclick="nextTrack()" title="Next">
@@ -1010,26 +1024,26 @@ async function play(i) {
 
   const apiUrl = `https://www.googleapis.com/drive/v3/files/${t.fileId}?alt=media&key=${API_KEY}`;
 
-  try {
-    document.getElementById('play-icon').style.display    = 'none';
-    document.getElementById('loading-icon').style.display = 'block';
+  // Show loading state on button
+  const playBtn  = document.getElementById('pb-play');
+  const playIcon = document.getElementById('play-icon');
+  playBtn.classList.add('loading');
+  playIcon.style.visibility = 'hidden';
 
+  try {
     audio.src    = apiUrl;
     audio.volume = document.getElementById('vol').value / 100;
     await audio.play();
     playing = true;
-
-    document.getElementById('loading-icon').style.display = 'none';
-    document.getElementById('play-icon').style.display    = 'block';
-
-    updateUI();
-    cancelAnimationFrame(raf);
-    animViz();
   } catch(err) {
-    document.getElementById('loading-icon').style.display = 'none';
-    document.getElementById('play-icon').style.display    = 'block';
     console.error('Play error:', err);
     toast('❌ Load failed: ' + err.message);
+    playing = false;
+  } finally {
+    playBtn.classList.remove('loading');
+    playIcon.style.visibility = 'visible';
+    updateUI();
+    if (playing) { cancelAnimationFrame(raf); animViz(); }
   }
 }
 
@@ -1247,6 +1261,7 @@ document.addEventListener('keydown', e => {
 function showSetup() {
   const ss = document.getElementById('setup-screen');
   ss.style.display = 'flex';
+  ss.classList.add('visible');
   ss.classList.remove('hide');
   setTimeout(() => {
     const inp = document.getElementById('s-apikey');
@@ -1257,7 +1272,10 @@ function showSetup() {
 function hideSetup() {
   const ss = document.getElementById('setup-screen');
   ss.classList.add('hide');
-  setTimeout(() => { ss.style.display = 'none'; }, 420);
+  setTimeout(() => {
+    ss.style.display = 'none';
+    ss.classList.remove('visible', 'hide');
+  }, 420);
 }
 
 function submitSetup() {
