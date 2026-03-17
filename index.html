@@ -872,7 +872,7 @@ body::after {
   inset: 0;
   background: #0a0a0a;
   z-index: 9000;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 24px;
@@ -1699,6 +1699,7 @@ document.addEventListener('keydown',e=>{
   // ── Setup Screen ──
   function showSetup() {
     const ss = document.getElementById('setup-screen');
+     ss.style.display = 'flex';
     ss.classList.remove('hide');
     setTimeout(() => {
       const inp = document.getElementById('s-apikey');
