@@ -170,6 +170,69 @@ input  { font-family: var(--font); }
 .playlist-scroll::-webkit-scrollbar { width: 4px; }
 .playlist-scroll::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
 
+
+/* ── Search Bar ── */
+.search-wrap {
+  padding: 6px 10px 8px;
+  flex-shrink: 0;
+}
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg3);
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  padding: 7px 12px;
+  transition: border-color 0.18s, background 0.18s;
+}
+.search-box:focus-within {
+  border-color: var(--accent);
+  background: var(--bg4);
+}
+.search-icon { color: var(--text-3); flex-shrink: 0; transition: color 0.18s; }
+.search-box:focus-within .search-icon { color: var(--accent); }
+.search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  min-width: 0;
+}
+.search-input::placeholder { color: var(--text-3); }
+.search-clear {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0;
+  display: none;
+  align-items: center;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.search-clear:hover { color: var(--text); }
+.search-clear.visible { display: flex; }
+
+/* highlight matching text */
+.tr-title mark, .tr-artist mark {
+  background: rgba(29,185,84,0.25);
+  color: var(--accent);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.no-results {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.no-results .nr-icon { font-size: 32px; margin-bottom: 10px; opacity: 0.4; }
+
 .track-row {
   display: flex;
   align-items: center;
@@ -699,7 +762,70 @@ input[type=range].vol-range:hover::-webkit-slider-thumb { background:var(--accen
   .library-header { padding: 6px 12px 4px; }
   .status-row { padding: 3px 12px 6px; }
   .playlist-scroll { flex: 1; overflow-y: auto; }
-  .track-row { padding: 7px 10px; }
+  
+/* ── Search Bar ── */
+.search-wrap {
+  padding: 6px 10px 8px;
+  flex-shrink: 0;
+}
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg3);
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  padding: 7px 12px;
+  transition: border-color 0.18s, background 0.18s;
+}
+.search-box:focus-within {
+  border-color: var(--accent);
+  background: var(--bg4);
+}
+.search-icon { color: var(--text-3); flex-shrink: 0; transition: color 0.18s; }
+.search-box:focus-within .search-icon { color: var(--accent); }
+.search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  min-width: 0;
+}
+.search-input::placeholder { color: var(--text-3); }
+.search-clear {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0;
+  display: none;
+  align-items: center;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.search-clear:hover { color: var(--text); }
+.search-clear.visible { display: flex; }
+
+/* highlight matching text */
+.tr-title mark, .tr-artist mark {
+  background: rgba(29,185,84,0.25);
+  color: var(--accent);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.no-results {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.no-results .nr-icon { font-size: 32px; margin-bottom: 10px; opacity: 0.4; }
+
+.track-row { padding: 7px 10px; }
   .tr-thumb { width: 40px; height: 40px; font-size: 16px; }
   .tr-title { font-size: 13px; }
   .tr-artist { font-size: 11px; }
@@ -922,6 +1048,24 @@ body::after {
         <span id="status-text">Connecting to Drive...</span>
       </div>
 
+      <div class="search-wrap">
+        <div class="search-box">
+          <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            class="search-input"
+            id="search-input"
+            type="text"
+            placeholder="Search songs, artists..."
+            oninput="onSearch(this.value)"
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <button class="search-clear" id="search-clear" onclick="clearSearch()" title="Clear">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
       <div class="playlist-scroll" id="playlist"></div>
 
       <button class="add-track-btn" onclick="openModal()">
@@ -1080,6 +1224,7 @@ let FOLDER_ID = localStorage.getItem('wavr_folder_id') || '';
 let tracks  = [];
 let cur     = -1;
 let playing = false;
+let searchQuery = '';
 // repeat: 0=OFF, 1=REPEAT ALL, 2=REPEAT ONE
 let repeat  = 0;
 let shuffle = false;
@@ -1226,16 +1371,44 @@ function mimeEmoji(m) {
 // ── Render Playlist ──
 const COLORS = ['#1db954','#1da0f2','#e91e8c','#ff6d00','#8b5cf6','#00bcd4','#f59e0b','#ef4444'];
 
+function highlight(text, query) {
+  if (!query) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+}
+
 function renderList() {
   const pl = document.getElementById('playlist');
   pl.innerHTML = '';
+
   if (!tracks.length) {
     pl.innerHTML = `<div class="empty-wrap"><div class="e-icon">🎵</div><h4>No tracks</h4><p>Add from Google Drive</p></div>`;
     return;
   }
-  tracks.forEach((t, i) => {
+
+  const q = searchQuery.toLowerCase().trim();
+
+  // Filter by search query — keep original index (i) for play()
+  const filtered = tracks
+    .map((t, i) => ({ t, i }))
+    .filter(({ t }) =>
+      !q ||
+      t.title.toLowerCase().includes(q) ||
+      (t.artist || '').toLowerCase().includes(q)
+    );
+
+  if (q && !filtered.length) {
+    pl.innerHTML = `<div class="no-results"><div class="nr-icon">🔍</div>No results for "<strong>${q}</strong>"</div>`;
+    return;
+  }
+
+  filtered.forEach(({ t, i }) => {
     const div = document.createElement('div');
     div.className = 'track-row' + (i===cur?' active':'') + (i===cur&&!playing?' paused-state':'');
+
+    const titleHtml  = highlight(t.title, q);
+    const artistHtml = highlight(t.artist || 'Unknown', q);
+
     div.innerHTML = `
       <div class="tr-num-wrap">
         <span class="tr-num">${i+1}</span>
@@ -1248,18 +1421,19 @@ function renderList() {
       </div>
       <div class="tr-thumb">${t.emoji||'🎵'}</div>
       <div class="tr-info">
-        <div class="tr-title">${t.title}</div>
-        <div class="tr-artist">${t.artist||'Unknown'}</div>
+        <div class="tr-title">${titleHtml}</div>
+        <div class="tr-artist">${artistHtml}</div>
       </div>
       <button class="tr-del" onclick="delTrack(${i},event)" title="Remove">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>`;
-    // Entire row clickable — except the delete button
+
     div.addEventListener('click', (e) => {
       if (!e.target.closest('.tr-del')) play(i);
     });
     pl.appendChild(div);
   });
+
   // Scroll active into view
   const active = pl.querySelector('.track-row.active');
   if (active) active.scrollIntoView({ block:'nearest', behavior:'smooth' });
@@ -1509,6 +1683,7 @@ function toast(msg) {
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT') return;
   if(e.code==='Space')      { e.preventDefault(); togglePlay(); }
+  if(e.code==='Escape')     { clearSearch(); }
   if(e.code==='ArrowRight') audio.currentTime=Math.min(audio.currentTime+10,audio.duration||0);
   if(e.code==='ArrowLeft')  audio.currentTime=Math.max(audio.currentTime-10,0);
   if(e.code==='KeyN')       nextTrack();
@@ -1618,6 +1793,25 @@ if (!API_KEY || !FOLDER_ID) { showSetup(); } else { loadFromDrive(); }
       });
     });
   });
+
+
+  // ── Search ──
+  function onSearch(val) {
+    searchQuery = val;
+    // Show/hide clear button
+    const clr = document.getElementById('search-clear');
+    if (clr) clr.classList.toggle('visible', val.length > 0);
+    renderList();
+  }
+
+  function clearSearch() {
+    searchQuery = '';
+    const inp = document.getElementById('search-input');
+    if (inp) { inp.value = ''; inp.focus(); }
+    const clr = document.getElementById('search-clear');
+    if (clr) clr.classList.remove('visible');
+    renderList();
+  }
 
 </script>
 
