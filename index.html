@@ -1067,11 +1067,6 @@ body::after {
       </div>
 
       <div class="playlist-scroll" id="playlist"></div>
-
-      <button class="add-track-btn" onclick="openModal()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add from Google Drive
-      </button>
     </div>
   </aside>
 
@@ -1179,16 +1174,7 @@ body::after {
 
   </div>
 </div>
-
-<!-- ══════════ ADD TRACK MODAL ══════════ -->
-<div class="modal-bg" id="modal" onclick="closeModalOut(event)">
-  <div class="modal-card">
-    <h2>Add Track</h2>
-    <p>Paste a Google Drive shareable link. Set file sharing to <strong>"Anyone with the link → Viewer"</strong>.</p>
-    <div class="fg">
-      <label>Track Title *</label>
-      <input type="text" id="i-title" placeholder="e.g. Tumi Je Amar">
-    </div>
+   
     <div class="fg">
       <label>Artist</label>
       <input type="text" id="i-artist" placeholder="e.g. Arijit Singh">
