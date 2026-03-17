@@ -1317,7 +1317,6 @@ async function loadFromDrive() {
     document.getElementById('track-count').textContent = tracks.length;
     renderList();
     toast(`✅ ${audioFiles.length} songs loaded!`);
-    if (cur === -1) play(0);
 
   } catch(e) {
     console.error('loadFromDrive error:', e);
@@ -1641,7 +1640,6 @@ function addTrack() {
   document.getElementById('track-count').textContent = tracks.length;
   renderList(); closeModal();
   toast(`✅ "${title}" added!`);
-  if (tracks.length===1) play(0);
 }
 
 function delTrack(i,e) {
