@@ -1439,15 +1439,11 @@ async function play(i) {
   if (audio._blobUrl) { URL.revokeObjectURL(audio._blobUrl); audio._blobUrl = null; }
 
   // Fetch as blob — googleapis alt=media works for publicly shared files with API key
-  const apiUrl = `https://www.googleapis.com/drive/v3/files/${t.fileId}?alt=media&key=${API_KEY}`;
+ const apiUrl = `https://www.googleapis.com/drive/v3/files/${t.fileId}?alt=media&key=${API_KEY}`;
 
   try {
-    const resp = await fetch(apiUrl);
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const blob = await resp.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    audio._blobUrl = blobUrl;
-    audio.src = blobUrl;
+    if (audio._blobUrl) { URL.revokeObjectURL(audio._blobUrl); audio._blobUrl = null; }
+    audio.src = apiUrl;
     audio.volume = document.getElementById('vol').value / 100;
     await audio.play();
     playing = true;
