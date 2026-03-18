@@ -1059,8 +1059,9 @@ async function play(i) {
   playIcon.style.visibility = 'hidden';
 
   try {
+    trackChanging = true;
     audio.src    = apiUrl;
-    audio.load();
+    audio.load();;
     audio.volume = document.getElementById('vol').value / 100;
     await audio.play();
     playing = true;
@@ -1069,6 +1070,7 @@ async function play(i) {
     toast('❌ Load failed: ' + err.message);
     playing = false;
   } finally {
+    trackChanging = false;
     playBtn.classList.remove('loading');
     playIcon.style.visibility = 'visible';
     updateUI();
@@ -1208,10 +1210,12 @@ audio.addEventListener('error', () => {
   toast('⚠️ Audio error. Ensure file is publicly shared on Drive.');
   playing = false; updateUI();
 });
-  audio.addEventListener('pause', () => {
-  if (playing && audio.currentTime > 0 && !audio.ended) {
+let trackChanging = false;
+
+audio.addEventListener('pause', () => {
+  if (playing && !trackChanging && audio.currentTime > 0 && !audio.ended) {
     setTimeout(() => {
-      if (playing && audio.paused) {
+      if (playing && audio.paused && !trackChanging) {
         audio.play().catch(() => {});
       }
     }, 500);
