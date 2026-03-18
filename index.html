@@ -1081,13 +1081,12 @@ function updateUI() {
   const c = COLORS[cur % COLORS.length];
 
   // Titles
-  document.getElementById('nw-title').textContent  = t.artist || 'Unknown Artist';
-  document.getElementById('nw-artist').textContent = t.title  || 'Unknown';
-  document.getElementById('pb-title').textContent  = t.artist || 'Unknown Artist';
-  document.getElementById('pb-artist').textContent = t.title  || 'Unknown';
-  document.getElementById('m-title').textContent   = t.artist || 'Unknown Artist';
-  document.getElementById('m-artist').textContent  = t.title  || 'Unknown';
-
+  document.getElementById('nw-title').textContent  = t.title  || 'Unknown';
+  document.getElementById('nw-artist').textContent = t.artist || 'Unknown Artist';
+  document.getElementById('pb-title').textContent  = t.title  || 'Unknown';
+  document.getElementById('pb-artist').textContent = t.artist || 'Unknown Artist';
+  document.getElementById('m-title').textContent   = t.title  || 'Unknown';
+  document.getElementById('m-artist').textContent  = t.artist || 'Unknown Artist';
   // Thumbs & art
   const emoji = t.emoji || '🎵';
   document.getElementById('pb-thumb').textContent = emoji;
