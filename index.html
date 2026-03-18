@@ -931,10 +931,11 @@ async function loadFromDrive() {
       artist: tracks[cur].artist || 'Unknown Artist',
       album: 'WAVR',
     });
-    navigator.mediaSession.setActionHandler('play',          () => { audio.play(); playing=true; updateUI(); });
+    navigator.mediaSession.setActionHandler('play',          () => { audio.play(); playing=true; updateUI(); cancelAnimationFrame(raf); animViz(); });
     navigator.mediaSession.setActionHandler('pause',         () => { audio.pause(); playing=false; updateUI(); });
     navigator.mediaSession.setActionHandler('nexttrack',     () => nextTrack());
     navigator.mediaSession.setActionHandler('previoustrack', () => prevTrack());
+    navigator.mediaSession.setActionHandler('stop',          () => { audio.pause(); playing=false; updateUI(); });
   }
 
   } catch(e) {
@@ -1234,38 +1235,6 @@ audio.addEventListener('error', () => {
   playing = false; updateUI();
 });
 let trackChanging = false;
-
-audio.addEventListener('pause', () => {
-  if (playing && !trackChanging && audio.currentTime > 0 && !audio.ended) {
-    setTimeout(() => {
-      if (playing && audio.paused && !trackChanging) {
-        audio.play().catch(() => {});
-      }
-    }, 500);
-  }
-});
-
-audio.addEventListener('stalled', () => {
-  if (playing) {
-    const t = audio.currentTime;
-    setTimeout(() => {
-      if (playing && audio.paused) {
-        audio.currentTime = t;
-        audio.play().catch(() => {});
-      }
-    }, 1000);
-  }
-});
-
-audio.addEventListener('suspend', () => {
-  if (playing && audio.currentTime > 0 && !audio.ended) {
-    setTimeout(() => {
-      if (playing && audio.paused) {
-        audio.play().catch(() => {});
-      }
-    }, 800);
-  }
-});
 
 function seekTo(e) {
   if (!audio.duration) return;
