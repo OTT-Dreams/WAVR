@@ -1209,6 +1209,37 @@ audio.addEventListener('error', () => {
   toast('⚠️ Audio error. Ensure file is publicly shared on Drive.');
   playing = false; updateUI();
 });
+  audio.addEventListener('pause', () => {
+  if (playing && audio.currentTime > 0 && !audio.ended) {
+    setTimeout(() => {
+      if (playing && audio.paused) {
+        audio.play().catch(() => {});
+      }
+    }, 500);
+  }
+});
+
+audio.addEventListener('stalled', () => {
+  if (playing) {
+    const t = audio.currentTime;
+    setTimeout(() => {
+      if (playing && audio.paused) {
+        audio.currentTime = t;
+        audio.play().catch(() => {});
+      }
+    }, 1000);
+  }
+});
+
+audio.addEventListener('suspend', () => {
+  if (playing && audio.currentTime > 0 && !audio.ended) {
+    setTimeout(() => {
+      if (playing && audio.paused) {
+        audio.play().catch(() => {});
+      }
+    }, 800);
+  }
+});
 
 function seekTo(e) {
   if (!audio.duration) return;
