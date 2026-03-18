@@ -954,12 +954,10 @@ function renderEmpty(title, msg) {
 
 // ── Name helpers ──
 function cleanName(n) {
-  n = n.replace(/\.(mp3|wav|ogg|flac|aac|m4a|opus|mp4|webm|wma|aiff|alac)$/i, '').replace(/_/g, ' ').trim();
-  return n.includes(' - ') ? n.split(' - ').slice(1).join(' - ').trim() : n;
+  return n.replace(/\.(mp3|wav|ogg|flac|aac|m4a|opus|mp4|webm|wma|aiff|alac)$/i, '').replace(/_/g, ' ').trim();
 }
 function guessArtist(n) {
-  n = n.replace(/\.(mp3|wav|ogg|flac|aac|m4a|opus|mp4|webm|wma|aiff|alac)$/i, '');
-  return n.includes(' - ') ? n.split(' - ')[0].trim() : '';
+  return '';
 }
 function mimeEmoji(m) {
   if (!m) return '🎵';
