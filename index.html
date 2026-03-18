@@ -1061,8 +1061,13 @@ async function play(i) {
   try {
     trackChanging = true;
     audio.src    = apiUrl;
-    audio.load();;
+    audio.load();
     audio.volume = document.getElementById('vol').value / 100;
+    await new Promise((resolve, reject) => {
+      audio.addEventListener('canplay', resolve, { once: true });
+      audio.addEventListener('error', reject, { once: true });
+      setTimeout(resolve, 8000);
+    });
     await audio.play();
     playing = true;
   } catch(err) {
@@ -1200,7 +1205,25 @@ audio.addEventListener('ended', () => {
   if (repeat === 2) {
     audio.currentTime = 0; audio.play().catch(() => {});
   } else if (repeat === 1) {
-    setTimeout(() => nextTrack(), 300);
+    const nextI = shuffle
+      ? Math.floor(Math.random() * tracks.length)
+      : (cur + 1) % tracks.length;
+    const nextUrl = `https://www.googleapis.com/drive/v3/files/${tracks[nextI].fileId}?alt=media&key=${API_KEY}`;
+    trackChanging = true;
+    cur = nextI;
+    audio.src = nextUrl;
+    audio.load();
+    audio.volume = document.getElementById('vol').value / 100;
+    audio.play().then(() => {
+      playing = true;
+      trackChanging = false;
+      updateUI();
+      cancelAnimationFrame(raf); animViz();
+    }).catch(() => {
+      trackChanging = false;
+      playing = false;
+      updateUI();
+    });
   } else {
     playing=false; updateUI();
   }
